@@ -32,6 +32,7 @@ if (import.meta.env.DEV) {
 
 if (process.platform === 'linux') {
   app.commandLine.appendSwitch('ozone-platform-hint', 'auto');
+  app.commandLine.appendSwitch('password-store', 'gnome-libsecret');
 }
 
 registerAppScheme();
