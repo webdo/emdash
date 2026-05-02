@@ -3,7 +3,10 @@ import { join } from 'node:path';
 import type Database from 'better-sqlite3';
 import { isValidProviderId } from '@shared/agent-provider-registry';
 import type { AppSettings, AppSettingsKey } from '@shared/app-settings';
-import { getDefaultForKey } from '@main/core/settings/settings-registry';
+import {
+  DEFAULT_REVIEW_PROMPT_ENTRY,
+  getDefaultForKey,
+} from '@main/core/settings/settings-registry';
 import { isPlainObject, mergeDeep } from '@main/core/settings/utils';
 import { tableExists } from '../../sqlite-utils';
 import type { RelationalImportDb } from '../relational/types';
@@ -217,7 +220,9 @@ export async function portLegacySettings(
     const prompt = readTrimmedString(review.prompt);
     if (prompt) {
       try {
-        await updateScalarSetting(settingsStore, 'reviewPrompt', prompt);
+        await updateScalarSetting(settingsStore, 'reviewPrompt', {
+          items: [{ ...DEFAULT_REVIEW_PROMPT_ENTRY, id: 'legacy', label: 'Review prompt', prompt }],
+        });
         summary.imported.push('reviewPrompt');
       } catch {
         summary.skipped.push('reviewPrompt:validation-failed');

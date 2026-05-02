@@ -8,6 +8,15 @@ export const DEFAULT_AGENT_ID = 'claude';
 export const DEFAULT_REVIEW_PROMPT =
   'Review all changes in this worktree. Focus on correctness, regressions, edge cases, and missing tests. List concrete issues first, then note residual risks.';
 
+export const DEFAULT_REVIEW_PROMPT_ENTRY = {
+  id: 'default-review',
+  label: 'Review',
+  prompt: DEFAULT_REVIEW_PROMPT,
+  icon: 'FileSearch' as const,
+  bgColor: 'slate' as const,
+  textColor: 'slate' as const,
+};
+
 type SettingsDefaultsMap = {
   [K in AppSettingsKey]: AppSettings[K] | (() => AppSettings[K]);
 };
@@ -36,7 +45,7 @@ export const SETTINGS_DEFAULTS = {
   },
   theme: null,
   defaultAgent: DEFAULT_AGENT_ID,
-  reviewPrompt: DEFAULT_REVIEW_PROMPT,
+  reviewPrompt: { items: [DEFAULT_REVIEW_PROMPT_ENTRY] },
   keyboard: {},
   openIn: {
     default: 'terminal' as const,

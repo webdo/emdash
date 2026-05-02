@@ -11,7 +11,7 @@ import IntegrationsCard from './IntegrationsCard';
 import KeyboardSettingsCard from './KeyboardSettingsCard';
 import NotificationSettingsCard from './NotificationSettingsCard';
 import RepositorySettingsCard from './RepositorySettingsCard';
-import { ReviewPromptResetButton, ReviewPromptSettingsCard } from './ReviewPromptSettingsCard';
+import { ReviewPromptSettingsCard } from './ReviewPromptSettingsCard';
 import { AutoGenerateTaskNamesRow, AutoTrustWorktreesRow } from './TaskSettingsRows';
 import TelemetryCard from './TelemetryCard';
 import TerminalSettingsCard from './TerminalSettingsCard';
@@ -94,8 +94,7 @@ export function SettingsPage({
       sections: [
         { component: <DefaultAgentSettingsCard /> },
         {
-          title: 'Review Prompt',
-          action: <ReviewPromptResetButton />,
+          title: 'Prompts',
           component: <ReviewPromptSettingsCard />,
         },
         {

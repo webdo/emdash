@@ -34,9 +34,10 @@ export function InitialConversationField({
   connectionId,
 }: InitialConversationFieldProps) {
   const { value: reviewPrompt } = useAppSettingsKey('reviewPrompt');
+  const reviewPromptItems = reviewPrompt?.items;
   const contextActions = useMemo(
-    () => buildTaskContextActions(linkedIssue, reviewPrompt),
-    [linkedIssue, reviewPrompt]
+    () => buildTaskContextActions(linkedIssue, reviewPromptItems),
+    [linkedIssue, reviewPromptItems]
   );
 
   const handleActionClick = (text: string) => {

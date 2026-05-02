@@ -1,7 +1,8 @@
 import z from 'zod';
 import { AGENT_PROVIDER_IDS, AGENT_PROVIDERS } from '@shared/agent-provider-registry';
 import { openInAppIdSchema } from '@shared/openInApps';
-import { DEFAULT_AGENT_ID, DEFAULT_REVIEW_PROMPT } from './settings-registry';
+import { PROMPT_COLORS, PROMPT_ICONS } from '@shared/prompts';
+import { DEFAULT_AGENT_ID, DEFAULT_REVIEW_PROMPT_ENTRY } from './settings-registry';
 
 export const localProjectSettingsSchema = z.object({
   defaultProjectsDirectory: z.string(),
@@ -41,7 +42,32 @@ export const themeSchema = z
 
 export const defaultAgentSchema = z.optional(z.enum(AGENT_PROVIDER_IDS)).default(DEFAULT_AGENT_ID);
 
-export const reviewPromptSchema = z.string().default(DEFAULT_REVIEW_PROMPT);
+export const promptEntrySchema = z.object({
+  id: z.string().min(1),
+  label: z.string().max(48).default(''),
+  prompt: z.string().default(''),
+  icon: z.enum(PROMPT_ICONS).default('FileSearch'),
+  bgColor: z.enum(PROMPT_COLORS).default('slate'),
+  textColor: z.enum(PROMPT_COLORS).default('slate'),
+});
+
+export const reviewPromptSchema = z
+  .union([
+    z.object({ items: z.array(promptEntrySchema).default([]) }),
+    z.string().transform((s) => ({
+      items: [
+        {
+          id: 'legacy',
+          label: 'Review prompt',
+          prompt: s,
+          icon: 'FileSearch' as const,
+          bgColor: 'slate' as const,
+          textColor: 'slate' as const,
+        },
+      ],
+    })),
+  ])
+  .default({ items: [DEFAULT_REVIEW_PROMPT_ENTRY] });
 
 export const keyboardSettingsSchema = z
   .optional(

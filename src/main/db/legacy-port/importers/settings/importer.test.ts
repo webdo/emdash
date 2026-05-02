@@ -211,7 +211,18 @@ describe('portLegacySettings', () => {
       soundFocusMode: 'unfocused',
     });
     expect(readRawSetting(appSqlite, 'defaultAgent')).toBe('codex');
-    expect(readRawSetting(appSqlite, 'reviewPrompt')).toBe('Review this worktree carefully.');
+    expect(readRawSetting(appSqlite, 'reviewPrompt')).toEqual({
+      items: [
+        {
+          id: 'legacy',
+          label: 'Review prompt',
+          prompt: 'Review this worktree carefully.',
+          icon: 'FileSearch',
+          bgColor: 'slate',
+          textColor: 'slate',
+        },
+      ],
+    });
     expect(readRawSetting(appSqlite, 'theme')).toBe('emdark');
 
     const terminal = readRawSetting(appSqlite, 'terminal') as Record<string, unknown>;

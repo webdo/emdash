@@ -4,11 +4,22 @@ import { db } from '@main/db/client';
 import { appSettings } from '@main/db/schema';
 import type { IInitializable } from '@main/lib/lifecycle';
 import { APP_SETTINGS_SCHEMA_MAP } from './schema';
-import { getDefaultForKey } from './settings-registry';
+import { DEFAULT_REVIEW_PROMPT_ENTRY, getDefaultForKey } from './settings-registry';
 import { computeDelta, computeTrueOverrides, isDeepEqual, isPlainObject, mergeDeep } from './utils';
 
 export type { AppSettings, AppSettingsKey } from '@shared/app-settings';
 export { AppSettingsKeys } from '@shared/app-settings';
+
+function normalizeLegacyRaw(key: AppSettingsKey, raw: unknown): unknown {
+  if (key === 'reviewPrompt' && typeof raw === 'string') {
+    return {
+      items: [
+        { ...DEFAULT_REVIEW_PROMPT_ENTRY, id: 'legacy', label: 'Review prompt', prompt: raw },
+      ],
+    };
+  }
+  return raw;
+}
 
 export class SettingsStore implements IInitializable {
   private cache: Partial<AppSettings> = {};
@@ -16,11 +27,13 @@ export class SettingsStore implements IInitializable {
   private async readRaw(key: AppSettingsKey): Promise<unknown> {
     const [row] = await db.select().from(appSettings).where(eq(appSettings.key, key)).execute();
     if (!row) return null;
+    let parsed: unknown;
     try {
-      return JSON.parse(row.value);
+      parsed = JSON.parse(row.value);
     } catch {
       return null;
     }
+    return normalizeLegacyRaw(key, parsed);
   }
 
   private async storeRaw(key: AppSettingsKey, value: unknown): Promise<void> {
