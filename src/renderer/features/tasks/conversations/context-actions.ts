@@ -1,10 +1,9 @@
-import type { PromptEntry } from '@shared/app-settings';
 import type { Issue } from '@shared/tasks';
 import { ISSUE_PROVIDER_META } from '@renderer/features/integrations/issue-provider-meta';
 
 const MAX_LABEL_TITLE_LENGTH = 24;
 
-export type ContextActionKind = 'linked-issue' | 'draft-comments' | 'prompt';
+export type ContextActionKind = 'linked-issue' | 'draft-comments' | 'review-prompt';
 
 export interface ContextAction {
   id: string;
@@ -12,9 +11,6 @@ export interface ContextAction {
   label: string;
   text: string;
   provider?: Issue['provider'];
-  icon?: PromptEntry['icon'];
-  bgColor?: PromptEntry['bgColor'];
-  textColor?: PromptEntry['textColor'];
 }
 
 function normalizeWhitespace(value: string | undefined): string {
@@ -69,25 +65,15 @@ export function buildLinkedIssueContextAction(issue?: Issue): ContextAction | nu
   };
 }
 
-export function buildPromptContextActions(
-  entries?: readonly PromptEntry[]
-): ContextAction[] {
-  if (!entries || entries.length === 0) return [];
-  const actions: ContextAction[] = [];
-  for (const entry of entries) {
-    const text = (entry.prompt ?? '').trim();
-    if (!text) continue;
-    actions.push({
-      id: `prompt:${entry.id}`,
-      kind: 'prompt',
-      label: entry.label,
-      text,
-      icon: entry.icon,
-      bgColor: entry.bgColor,
-      textColor: entry.textColor,
-    });
-  }
-  return actions;
+export function buildReviewPromptContextAction(reviewPrompt?: string): ContextAction | null {
+  const text = (reviewPrompt ?? '').trim();
+  if (!text) return null;
+  return {
+    id: 'review-prompt',
+    kind: 'review-prompt',
+    label: 'Review prompt',
+    text,
+  };
 }
 
 export function buildDraftCommentsContextAction(args: {
@@ -107,15 +93,15 @@ export function buildDraftCommentsContextAction(args: {
 
 export function buildTaskContextActions(
   linkedIssue?: Issue,
-  promptEntries?: readonly PromptEntry[],
+  reviewPrompt?: string,
   draftComments?: { count: number; formattedComments?: string }
 ): ContextAction[] {
   const linkedIssueAction = buildLinkedIssueContextAction(linkedIssue);
   const draftCommentsAction = draftComments ? buildDraftCommentsContextAction(draftComments) : null;
-  const promptActions = buildPromptContextActions(promptEntries);
+  const reviewPromptAction = buildReviewPromptContextAction(reviewPrompt);
   const actions: ContextAction[] = [];
   if (linkedIssueAction) actions.push(linkedIssueAction);
   if (draftCommentsAction) actions.push(draftCommentsAction);
-  actions.push(...promptActions);
+  if (reviewPromptAction) actions.push(reviewPromptAction);
   return actions;
 }

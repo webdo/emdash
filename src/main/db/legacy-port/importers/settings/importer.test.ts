@@ -179,8 +179,8 @@ describe('portLegacySettings', () => {
     });
 
     expect(summary.imported).toEqual([
-      'localProject.branchPrefix',
-      'localProject.pushOnCreate',
+      'project.branchPrefix',
+      'project.pushOnCreate',
       'tasks.autoGenerateName',
       'tasks.autoApproveByDefault',
       'tasks.autoTrustWorktrees',
@@ -196,8 +196,9 @@ describe('portLegacySettings', () => {
 
     const localProject = readRawSetting(appSqlite, 'localProject') as Record<string, unknown>;
     expect(localProject.defaultProjectsDirectory).toBe('/beta/projects');
-    expect(localProject.branchPrefix).toBe('legacy-prefix');
-    expect(localProject.pushOnCreate).toBe(false);
+    const project = readRawSetting(appSqlite, 'project') as Record<string, unknown>;
+    expect(project.branchPrefix).toBe('legacy-prefix');
+    expect(project.pushOnCreate).toBe(false);
 
     expect(readRawSetting(appSqlite, 'tasks')).toEqual({
       autoGenerateName: false,
@@ -211,18 +212,7 @@ describe('portLegacySettings', () => {
       soundFocusMode: 'unfocused',
     });
     expect(readRawSetting(appSqlite, 'defaultAgent')).toBe('codex');
-    expect(readRawSetting(appSqlite, 'reviewPrompt')).toEqual({
-      items: [
-        {
-          id: 'legacy',
-          label: 'Review prompt',
-          prompt: 'Review this worktree carefully.',
-          icon: 'FileSearch',
-          bgColor: 'slate',
-          textColor: 'slate',
-        },
-      ],
-    });
+    expect(readRawSetting(appSqlite, 'reviewPrompt')).toBe('Review this worktree carefully.');
     expect(readRawSetting(appSqlite, 'theme')).toBe('emdark');
 
     const terminal = readRawSetting(appSqlite, 'terminal') as Record<string, unknown>;

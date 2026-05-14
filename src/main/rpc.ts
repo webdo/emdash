@@ -19,6 +19,7 @@ import { projectController } from './core/projects/controller';
 import { ptyController } from './core/pty/controller';
 import { pullRequestController } from './core/pull-requests/controller';
 import { repositoryController } from './core/repository/controller';
+import { resourceMonitorController } from './core/resource-monitor/controller';
 import { searchController } from './core/search/controller';
 import { appSettingsController } from './core/settings/controller';
 import { providerSettingsController } from './core/settings/provider-settings-controller';
@@ -29,6 +30,7 @@ import { telemetryController } from './core/telemetry/controller';
 import { terminalsController } from './core/terminals/controller';
 import { updateController } from './core/updates/controller';
 import { viewStateController } from './core/view-state/controller';
+import { workspaceController } from './core/workspaces/controller';
 import { legacyPortController } from './db/legacy-port/controller';
 
 export const rpcRouter = createRPCRouter({
@@ -41,6 +43,7 @@ export const rpcRouter = createRPCRouter({
   fs: filesController,
   update: updateController,
   pty: ptyController,
+  resourceMonitor: resourceMonitorController,
   featurebase: featurebaseController,
   forgejo: forgejoController,
   github: githubController,
@@ -63,6 +66,7 @@ export const rpcRouter = createRPCRouter({
   pullRequests: pullRequestController,
   viewState: viewStateController,
   search: searchController,
+  workspaces: workspaceController,
 });
 
 export type RpcRouter = typeof rpcRouter;

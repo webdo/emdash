@@ -1,24 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { PromptEntry } from '@shared/app-settings';
 import type { Issue } from '@shared/tasks';
 import {
   buildDraftCommentsContextAction,
   buildLinkedIssueContextAction,
-  buildPromptContextActions,
+  buildReviewPromptContextAction,
   buildTaskContextActions,
 } from '@renderer/features/tasks/conversations/context-actions';
-
-function makePromptEntry(overrides: Partial<PromptEntry> = {}): PromptEntry {
-  return {
-    id: 'r1',
-    label: 'Review',
-    prompt: 'Review this worktree for issues.',
-    icon: 'FileSearch',
-    bgColor: 'slate',
-    textColor: 'slate',
-    ...overrides,
-  };
-}
 
 function makeIssue(overrides: Partial<Issue> = {}): Issue {
   return {
@@ -77,34 +64,19 @@ describe('buildLinkedIssueContextAction', () => {
   });
 });
 
-describe('buildPromptContextActions', () => {
-  it('returns empty array when no entries provided', () => {
-    expect(buildPromptContextActions(undefined)).toEqual([]);
-    expect(buildPromptContextActions([])).toEqual([]);
+describe('buildReviewPromptContextAction', () => {
+  it('returns null for empty review prompt', () => {
+    expect(buildReviewPromptContextAction('   ')).toBeNull();
   });
 
-  it('skips entries with whitespace-only prompts', () => {
-    expect(buildPromptContextActions([makePromptEntry({ prompt: '   ' })])).toEqual([]);
-  });
-
-  it('preserves entry order and forwards icon/color metadata', () => {
-    const actions = buildPromptContextActions([
-      makePromptEntry({ id: 'a', label: 'A', prompt: 'first', bgColor: 'blue' }),
-      makePromptEntry({ id: 'b', label: 'B', prompt: 'second', icon: 'Bug' }),
-    ]);
-    expect(actions).toHaveLength(2);
-    expect(actions[0]).toMatchObject({
-      id: 'prompt:a',
-      kind: 'prompt',
-      label: 'A',
-      text: 'first',
-      bgColor: 'blue',
-    });
-    expect(actions[1]).toMatchObject({
-      id: 'prompt:b',
-      label: 'B',
-      text: 'second',
-      icon: 'Bug',
+  it('builds review prompt action', () => {
+    const action = buildReviewPromptContextAction('Review this worktree for issues.');
+    expect(action).not.toBeNull();
+    expect(action).toMatchObject({
+      id: 'review-prompt',
+      kind: 'review-prompt',
+      label: 'Review prompt',
+      text: 'Review this worktree for issues.',
     });
   });
 });
@@ -144,22 +116,14 @@ describe('buildDraftCommentsContextAction', () => {
 });
 
 describe('buildTaskContextActions', () => {
-  it('includes linked issue context, then draft comments, then review prompts in order', () => {
-    const actions = buildTaskContextActions(
-      makeIssue(),
-      [
-        makePromptEntry({ id: 'a', label: 'A' }),
-        makePromptEntry({ id: 'b', label: 'B', prompt: 'second' }),
-      ],
-      {
-        count: 1,
-        formattedComments: '<user_comments>test</user_comments>',
-      }
-    );
-    expect(actions).toHaveLength(4);
+  it('includes linked issue context, then draft comments, then review prompt', () => {
+    const actions = buildTaskContextActions(makeIssue(), 'Review this worktree for issues.', {
+      count: 1,
+      formattedComments: '<user_comments>test</user_comments>',
+    });
+    expect(actions).toHaveLength(3);
     expect(actions[0]?.id).toBe('linked-issue:github:EMD-123');
     expect(actions[1]?.id).toBe('draft-comments');
-    expect(actions[2]?.id).toBe('prompt:a');
-    expect(actions[3]?.id).toBe('prompt:b');
+    expect(actions[2]?.id).toBe('review-prompt');
   });
 });

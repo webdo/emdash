@@ -4,20 +4,22 @@ import { menuOpenSettingsChannel, notificationFocusTaskChannel } from '@shared/e
 import { getTaskView } from '@renderer/features/tasks/stores/task-selectors';
 import { events } from '@renderer/lib/ipc';
 import { useNavigate, useWorkspaceSlots } from '@renderer/lib/layout/navigation-provider';
+import { toggleSettingsView } from '@renderer/lib/layout/settings-toggle';
 
 export function AppMenuEvents({ onOpenSettings }: { onOpenSettings?: () => boolean | void }) {
   const { navigate } = useNavigate();
-  const { currentView } = useWorkspaceSlots();
+  const { currentView, lastNonSettingsView } = useWorkspaceSlots();
 
   useEffect(() => {
     return events.on(menuOpenSettingsChannel, () => {
-      const shouldOpen = onOpenSettings?.() ?? true;
-      if (shouldOpen === false) return;
-      if (currentView === 'settings') return;
+      if (currentView !== 'settings') {
+        const shouldOpen = onOpenSettings?.() ?? true;
+        if (shouldOpen === false) return;
+      }
 
-      navigate('settings');
+      toggleSettingsView(navigate, currentView, lastNonSettingsView);
     });
-  }, [navigate, onOpenSettings, currentView]);
+  }, [navigate, onOpenSettings, currentView, lastNonSettingsView]);
 
   useEffect(() => {
     const disposers = new Set<() => void>();
@@ -28,24 +30,17 @@ export function AppMenuEvents({ onOpenSettings }: { onOpenSettings?: () => boole
         navigate('task', { projectId, taskId });
         if (!conversationId) return;
 
-        // Task view may not be provisioned yet — wait for the conversation tab to exist.
+        // Task view may not be provisioned yet — wait for it before opening the conversation tab.
         const dispose = when(
+          () => !!getTaskView(projectId, taskId),
           () => {
-            const view = getTaskView(projectId, taskId);
-            return (
-              !!view &&
-              view.tabManager.tabs.some(
-                (tab) => tab.kind === 'conversation' && tab.id === conversationId
-              )
-            );
-          },
-          () => {
-            getTaskView(projectId, taskId)?.tabManager.setActiveTab(conversationId);
+            getTaskView(projectId, taskId)?.tabManager.openConversation(conversationId);
           },
           {
             timeout: 10_000,
           }
         );
+
         disposers.add(dispose);
       }
     );

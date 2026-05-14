@@ -3,10 +3,7 @@ import { join } from 'node:path';
 import type Database from 'better-sqlite3';
 import { isValidProviderId } from '@shared/agent-provider-registry';
 import type { AppSettings, AppSettingsKey } from '@shared/app-settings';
-import {
-  DEFAULT_REVIEW_PROMPT_ENTRY,
-  getDefaultForKey,
-} from '@main/core/settings/settings-registry';
+import { getDefaultForKey } from '@main/core/settings/settings-registry';
 import { isPlainObject, mergeDeep } from '@main/core/settings/utils';
 import { tableExists } from '../../sqlite-utils';
 import type { RelationalImportDb } from '../relational/types';
@@ -121,20 +118,20 @@ export async function portLegacySettings(
     const branchPrefix = readTrimmedString(repository.branchPrefix);
     if (branchPrefix) {
       patch.branchPrefix = branchPrefix;
-      summary.imported.push('localProject.branchPrefix');
+      summary.imported.push('project.branchPrefix');
     }
 
     const pushOnCreate = readBoolean(repository.pushOnCreate);
     if (pushOnCreate !== null) {
       patch.pushOnCreate = pushOnCreate;
-      summary.imported.push('localProject.pushOnCreate');
+      summary.imported.push('project.pushOnCreate');
     }
 
     if (Object.keys(patch).length > 0) {
       try {
-        await updateObjectSetting(settingsStore, 'localProject', patch);
+        await updateObjectSetting(settingsStore, 'project', patch);
       } catch {
-        summary.skipped.push('localProject:validation-failed');
+        summary.skipped.push('project:validation-failed');
       }
     }
   }
@@ -220,9 +217,7 @@ export async function portLegacySettings(
     const prompt = readTrimmedString(review.prompt);
     if (prompt) {
       try {
-        await updateScalarSetting(settingsStore, 'reviewPrompt', {
-          items: [{ ...DEFAULT_REVIEW_PROMPT_ENTRY, id: 'legacy', label: 'Review prompt', prompt }],
-        });
+        await updateScalarSetting(settingsStore, 'reviewPrompt', prompt);
         summary.imported.push('reviewPrompt');
       } catch {
         summary.skipped.push('reviewPrompt:validation-failed');
